@@ -1,18 +1,27 @@
-export function FirstFrame() {
+import { useState } from "react";
+
+  export function FirstFrame() {
+  const [background, setBackground] = useState("bg.jpg");
+
+  /*function cambiarFondo() {
+    setBackground("inici.jpg");
+  }*/
+
+
   return (
-    <div
+    <div id="fondo"
       className="h-full w-full flex flex-col justify-between py-8 bg-center bg-cover text-white"
-      style={{ backgroundImage: "url('bg.jpg')" }}
+      style={{ backgroundImage: `url('${background}')` }}
     >
       {/* App principal */}
       <div className="h-full flex justify-center items-center">
-        <div className="w-fit flex flex-col items-center gap-2 p-2 cursor-pointer group">
+        <a href="/app"><div /*id="aplicacion" onClick={cambiarFondo}*/ className="w-fit flex flex-col items-center gap-2 p-2 cursor-pointer group">
           <div
             className="w-12 h-12 rounded-xl bg-center bg-cover shadow-lg shadow-black/40 group-active:opacity-85"
             style={{ backgroundImage: "url('image.webp')" }}
           />
           <p className="text-xs text-white/80 font-medium">Circuit BCN-CAT</p>
-        </div>
+        </div></a>
       </div>
 
       {/* Dock estilo iOS */}
