@@ -14,7 +14,7 @@ export function Circuit() {
 
   return (
     <div className="sm:pb-12 text-white h-full bg-[#25263A] box-border max-h-full flex flex-col">
-      <div className="overflow-auto pb-12 flex-1 p-2">
+      <div className="overflow-auto flex-1">
         <Outlet />
       </div>
 

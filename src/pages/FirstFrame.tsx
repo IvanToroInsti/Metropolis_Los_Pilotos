@@ -14,14 +14,14 @@ export function FirstFrame() {
           <div
             className="w-12 h-12 rounded-xl bg-center bg-cover shadow-lg shadow-black/40 group-active:opacity-85"
             style={{ backgroundImage: "url('image.webp')" }}
-            onClick={() => navigate("/circuit")}
+            onClick={() => navigate("/app")}
           />
           <p className="text-xs text-white/80 font-medium">Circuit BCN-CAT</p>
         </div>
       </div>
 
       {/* Dock estilo iOS */}
-      <div className="w-full px-2">
+      <div className="w-full px-2 sm:mb-4">
         <div className="h-20 rounded-3xl bg-white/5 backdrop-blur-xs border border-white/20 shadow-2xl flex gap-3 items-center justify-center">
           <DockIcon image="apple-store.svg" />
           <DockIcon image="camera.svg" />
