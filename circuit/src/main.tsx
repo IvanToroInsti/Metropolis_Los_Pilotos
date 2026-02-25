@@ -7,6 +7,7 @@ import { FirstFrame } from "./pages/FirstFrame";
 
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Circuit } from "./pages/Circuit";
+import { CircuitPage } from "./pages/CircuitPage";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -20,7 +21,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="eventos" element={<>Eventos</>} />
             <Route path="tickets" element={<>tickets</>} />
             <Route path="app" element={<>app</>} />
-            <Route path="circuit" element={<>circuit</>} />
+            <Route path="circuit" element={<CircuitPage />} />
             <Route path="cuenta" element={<>cuenta</>} />
           </Route>
         </Routes>
