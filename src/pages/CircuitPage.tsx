@@ -1,59 +1,155 @@
-import { useEffect, useRef, useState } from "react";
-import { puertas, tribunas } from "../data/points";
-import { useLocation } from "react-router-dom";
-import L from "leaflet";
+import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
+
 import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine";
 
+import { useEffect, useRef, useState } from "react";
+import { puertas, tribunas } from "../data/points";
+
+const circuitCoords: [number, number] = [41.56919, 2.258137];
+
 export function CircuitPage() {
-  const location = useLocation();
-  const mapRef = useRef<HTMLDivElement | null>(null);
+  const [coords, setCoords] = useState<[number, number]>(circuitCoords);
 
-  const mapInstanceRef = useRef<L.Map | null>(null);
-  const routingRef = useRef<any>(null);
+  const [puerta, setPuerta] = useState<string | null>(null);
+  const [puertaCoords, setPuertaCoords] = useState<[number, number] | null>(
+    null,
+  );
 
-  const isCircuit = location.pathname.includes("circuit");
+  const [tribuna, setTribuna] = useState<string | null>(null);
+  const [tribunaCoords, setTribunaCoords] = useState<[number, number] | null>(
+    null,
+  );
 
-  const [puertaSeleccionada, setPuertaSeleccionada] = useState("");
-  const [tribunaSeleccionada, setTribunaSeleccionada] = useState("");
+  const [message, setMessage] = useState<string | null>(null);
+
+  const positionSuccess: PositionCallback = (pos) => {
+    setCoords([pos.coords.latitude, pos.coords.longitude]);
+  };
+
+  const positionError: PositionErrorCallback = (err) => {
+    setMessage(
+      "Permita el acceso a su ubicación para conocer la ruta más próxima.",
+    );
+
+    console.error(err.message);
+  };
 
   useEffect(() => {
-    if (!isCircuit) return;
-    if (!mapRef.current) return;
-    if (!puertaSeleccionada || !tribunaSeleccionada) return;
+    navigator.geolocation.getCurrentPosition(positionSuccess, positionError);
+  }, []);
 
-    const puerta = puertas.find((p) => p.id === puertaSeleccionada);
-    const tribuna = tribunas.find((t) => t.id === tribunaSeleccionada);
-
+  useEffect(() => {
     if (!puerta || !tribuna) return;
 
-    // Crear mapa SOLO si no existe
-    if (!mapInstanceRef.current) {
-      const map = L.map(mapRef.current).setView([0, 0], 13);
-      mapInstanceRef.current = map;
+    const p = puertas.find((val) => val.id === puerta);
+    const t = tribunas.find((val) => val.id === tribuna);
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap",
-      }).addTo(map);
-    }
+    if (p?.lat && p?.lng) setPuertaCoords([p.lat, p.lng]);
+    if (t?.lat && t.lng) setTribunaCoords([t.lat, t.lng]);
+  }, [puerta, tribuna]);
 
-    const map = mapInstanceRef.current;
+  return (
+    <div className="border h-2/3">
+      <MapContainer
+        className="w-full h-full"
+        center={coords}
+        zoom={15}
+        scrollWheelZoom={false}
+      >
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-    navigator.geolocation.getCurrentPosition((position) => {
-      const userLat = position.coords.latitude;
-      const userLng = position.coords.longitude;
+        <ChangeView center={coords} />
+        <Routing
+          center={coords}
+          puerta={puertaCoords}
+          tribuna={tribunaCoords}
+        />
+      </MapContainer>
+      {message && <div>{message}</div>}
 
-      // 🔥 BORRAR RUTA ANTERIOR
-      if (routingRef.current) {
-        map.removeControl(routingRef.current);
-      }
+      <div className="flex flex-col gap-2 py-2 px-1">
+        <select
+          id="puertas"
+          className="border p-2 rounded-lg w-full"
+          value={puerta ?? ""}
+          onChange={(e) => {
+            setPuerta(e.target.value);
+          }}
+        >
+          <option value="invalid" className="text-black">
+            --Selecciona--
+          </option>
 
-      // 🔥 CREAR NUEVA RUTA
-      routingRef.current = L.Routing.control({
+          {puertas.map((p) => (
+            <option key={p.id} value={p.id} className="text-black">
+              {p.nom}
+            </option>
+          ))}
+        </select>
+
+        <select
+          id="tribuna"
+          className="border p-2 rounded-lg w-full"
+          value={tribuna ?? ""}
+          onChange={(e) => {
+            setTribuna(e.target.value);
+          }}
+        >
+          <option className="text-black">--Selecciona--</option>
+          {tribunas.map((t) => (
+            <option key={t.id} value={t.id} className="text-black">
+              {t.nom}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
+  );
+}
+
+function ChangeView({ center }: { center: [number, number] }) {
+  const map = useMap();
+
+  useEffect(() => {
+    map.flyTo(center, map.getZoom());
+  }, [center, map]);
+
+  return center ? (
+    <Marker position={center}>
+      <Popup>
+        {center[0] === circuitCoords[0] && center[1] === circuitCoords[1]
+          ? "Circuito de catalunya"
+          : "Estas aqui"}
+      </Popup>
+    </Marker>
+  ) : null;
+}
+
+function Routing({
+  center,
+  puerta,
+  tribuna,
+}: {
+  center: [number, number];
+  puerta: [number, number] | null;
+  tribuna: [number, number] | null;
+}) {
+  const map = useMap();
+
+  const routingRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (!map) return;
+    if (!center) return;
+    if (!puerta || !tribuna) return;
+
+    if (!routingRef.current) {
+      routingRef.current = (L as any).Routing.control({
         waypoints: [
-          L.latLng(userLat, userLng),
-          L.latLng(puerta.lat, puerta.lng),
-          L.latLng(tribuna.lat, tribuna.lng),
+          L.latLng(center[0], center[1]),
+          L.latLng(puerta[0], puerta[1]),
+          L.latLng(tribuna[0], tribuna[1]),
         ],
         routeWhileDragging: false,
         addWaypoints: false,
@@ -63,52 +159,14 @@ export function CircuitPage() {
           styles: [{ color: "blue", weight: 5 }],
         },
       }).addTo(map);
+    } else {
+      routingRef.current.setWaypoints([
+        L.latLng(center[0], center[1]),
+        L.latLng(puerta[0], puerta[1]),
+        L.latLng(tribuna[0], tribuna[1]),
+      ]);
+    }
+  }, [map, center, puerta, tribuna]);
 
-      map.setView([userLat, userLng], 14);
-    });
-  }, [isCircuit, puertaSeleccionada, tribunaSeleccionada]);
-
-  return (
-    <div>
-      <div
-        ref={mapRef}
-        id="mapa"
-        className="w-60 h-80 rounded-xl z-0 mt-7 mx-auto bg-black/10"
-      />
-
-      <form className="mt-4 flex flex-col gap-2 items-center">
-        <label htmlFor="puerta">Puerta:</label>
-        <select
-          value={puertaSeleccionada}
-          onChange={(e) => setPuertaSeleccionada(e.target.value)}
-          id="puerta"
-          className="border p-2 rounded-lg"
-        >
-          <option value="invalid" className="text-black">
-            --Selecciona--
-          </option>
-          {puertas.map((p) => (
-            <option key={p.id} value={p.id} className="text-black">
-              {p.nom}
-            </option>
-          ))}
-        </select>
-
-        <label htmlFor="tribuna">Tribuna:</label>
-        <select
-          id="tribuna"
-          value={tribunaSeleccionada}
-          onChange={(e) => setTribunaSeleccionada(e.target.value)}
-          className="border p-2 rounded-lg"
-        >
-          <option className="text-black">--Selecciona--</option>
-          {tribunas.map((t) => (
-            <option key={t.id} value={t.id} className="text-black">
-              {t.nom}
-            </option>
-          ))}
-        </select>
-      </form>
-    </div>
-  );
+  return null;
 }
