@@ -4,7 +4,6 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine";
 
 import { useEffect, useRef, useState } from "react";
-<<<<<<< HEAD
 import { puertas, tribunas, baños, bares } from "../data/points";
 import { TbBackground } from "react-icons/tb";
 
@@ -44,13 +43,6 @@ export function CircuitPage() {
   const [mostrarWC, setMostrarWC] = useState(false);
   const [mostrarBares, setMostrarBares] = useState(false);
 
-=======
-import { puertas, tribunas } from "../data/points";
-
-const circuitCoords: [number, number] = [41.56919, 2.258137];
-
-export function CircuitPage() {
->>>>>>> 852a497fb5cd942312484dd75f726abfe8f9fe87
   const [coords, setCoords] = useState<[number, number]>(circuitCoords);
 
   const [puerta, setPuerta] = useState<string | null>(null);
@@ -107,7 +99,6 @@ export function CircuitPage() {
           puerta={puertaCoords}
           tribuna={tribunaCoords}
         />
-<<<<<<< HEAD
 
         {mostrarWC &&
           baños.map((b) => (
