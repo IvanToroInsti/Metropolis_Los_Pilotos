@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+.leaflet-routing-container {
+  display: none !important;
+}
+
+.panel{
+  display: flex;
+  gap: 40px;
+}
+
+.transporte,
+.info{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.columna{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
