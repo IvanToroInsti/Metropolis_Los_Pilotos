@@ -2,6 +2,7 @@
 
 .leaflet-routing-container {
   display: none !important;
+<<<<<<< HEAD
 }
 
 .panel{
@@ -20,4 +21,6 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+=======
+>>>>>>> 852a497fb5cd942312484dd75f726abfe8f9fe87
 }

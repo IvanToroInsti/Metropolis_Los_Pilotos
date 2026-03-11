@@ -129,6 +129,7 @@ export const tribunas = [
     lng: 2.2568010349709264,
   },
 ];
+<<<<<<< HEAD
 
 
 export const baños = [
@@ -208,3 +209,5 @@ export const bares = [
     lng: 2.2580911794267795,
   },
 ];
+=======
+>>>>>>> 852a497fb5cd942312484dd75f726abfe8f9fe87
