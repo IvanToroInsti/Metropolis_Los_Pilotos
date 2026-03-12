@@ -5,10 +5,8 @@ import "leaflet-routing-machine";
 
 import { useEffect, useRef, useState } from "react";
 import { puertas, tribunas, baños, bares } from "../data/points";
-import { TbBackground } from "react-icons/tb";
 
 const circuitCoords: [number, number] = [41.56919, 2.258137];
-
 
 // Marcador azul para WC
 const wcIcon = L.divIcon({
@@ -38,8 +36,16 @@ const barIcon = L.divIcon({
   iconAnchor: [10, 10],
 });
 
-export function CircuitPage() {
+const idiomas = [
+  "Castellano",
+  "Catalán",
+  "Inglés",
+  "Francés",
+  "Alemán",
+  "Italiano",
+];
 
+export function CircuitPage() {
   const [mostrarWC, setMostrarWC] = useState(false);
   const [mostrarBares, setMostrarBares] = useState(false);
 
@@ -84,9 +90,24 @@ export function CircuitPage() {
   }, [puerta, tribuna]);
 
   return (
-    <div className="border h-2/3">
+    <div className="h-full px-2">
+      <div className="py-2 flex gap-2 items-center">
+        <h3 className="text-sm mb-1">Idioma</h3>
+        <select
+          name=""
+          id=""
+          className="w-full bg-black/55 p-2 text-xs rounded-lg"
+        >
+          {idiomas.map((i, n) => (
+            <option key={n} className="text-white">
+              {i}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <MapContainer
-        className="w-full h-full"
+        className="w-full h-2/3 rounded-lg"
         center={coords}
         zoom={15}
         scrollWheelZoom={false}
@@ -115,88 +136,68 @@ export function CircuitPage() {
           ))}
       </MapContainer>
       {message && <div>{message}</div>}
-      <div className="panel">
+      <div className="flex gap-2 p-2">
+        <div>
+          <h3 className="text-lg font-semibold text-center">Puerta</h3>
+          <select
+            id="puertas"
+            className="p-2 rounded-lg w-full bg-black/55 text-xs"
+            value={puerta ?? ""}
+            onChange={(e) => {
+              setPuerta(e.target.value);
+            }}
+          >
+            <option value="invalid" className="text-white text-xs">
+              --Selecciona--
+            </option>
 
-        <div className="columna">
-          <h3>Transporte</h3>
-
-          <label className="transporte">
-            <input type="radio" name="transporte" value="tren" />
-            <img src="/tren.png" width={25} height={25} />
-          </label>
-
-          <label className="transporte">
-            <input type="radio" name="transporte" value="bus" />
-            <img src="/autobus.png" width={25} height={25} />
-          </label>
-
-          <label className="transporte">
-            <input type="radio" name="transporte" value="coche" />
-            <img src="/coche.png" width={25} height={25} />
-          </label>
-
+            {puertas.map((p) => (
+              <option key={p.id} value={p.id} className="text-white text-xs">
+                {p.nom}
+              </option>
+            ))}
+          </select>
         </div>
-
-
-        <div className="columna">
-          <h3>Info</h3>
-
-          <label className="info">
-            <input
-              type="checkbox"
-              checked={mostrarWC}
-              onChange={(e) => setMostrarWC(e.target.checked)}
-            />
-            <p>WC</p>
-          </label>
-
-          <label className="info">
-            <input
-              type="checkbox"
-              checked={mostrarBares}
-              onChange={(e) => setMostrarBares(e.target.checked)}
-            />
-            <p>Bares</p>
-          </label>
-
+        <div>
+          <h3 className="text-lg font-semibold text-center">Tribuna</h3>
+          <select
+            id="tribuna"
+            className="p-2 rounded-lg w-full bg-black/55 text-xs"
+            value={tribuna ?? ""}
+            onChange={(e) => {
+              setTribuna(e.target.value);
+            }}
+          >
+            <option className="text-white">--Selecciona--</option>
+            {tribunas.map((t) => (
+              <option key={t.id} value={t.id} className="text-white">
+                {t.nom}
+              </option>
+            ))}
+          </select>
         </div>
-
       </div>
-      <div className="flex flex-col gap-2 py-2 px-1">
-        <select
-          id="puertas"
-          className="border p-2 rounded-lg w-full"
-          value={puerta ?? ""}
-          onChange={(e) => {
-            setPuerta(e.target.value);
-          }}
-        >
-          <option value="invalid" className="text-black">
-            --Selecciona--
-          </option>
+      <div className="px-4 text-center flex flex-col gap-2 ">
+        <h3 className="text-lg font-semibold">Transporte</h3>
 
-          {puertas.map((p) => (
-            <option key={p.id} value={p.id} className="text-black">
-              {p.nom}
-            </option>
-          ))}
-        </select>
+        <div className="flex gap-2 w-full justify-center px-2">
+          <Option value="tren" image="/tren.png" />
+          <Option value="bus" image="/autobus.png" />
+          <Option value="coche" image="/coche.png" />
+        </div>
 
-        <select
-          id="tribuna"
-          className="border p-2 rounded-lg w-full"
-          value={tribuna ?? ""}
-          onChange={(e) => {
-            setTribuna(e.target.value);
-          }}
-        >
-          <option className="text-black">--Selecciona--</option>
-          {tribunas.map((t) => (
-            <option key={t.id} value={t.id} className="text-black">
-              {t.nom}
-            </option>
-          ))}
-        </select>
+        <div className="px-4 text-center flex flex-col gap-2 pb-12">
+          <h3 className="text-lg font-semibold">Capas de información</h3>
+
+          <div className="flex gap-2 w-full justify-center px-2">
+            <LabelInfo showWC={mostrarWC} setShowWC={setMostrarWC} title="WC" />
+            <LabelInfo
+              showWC={mostrarBares}
+              setShowWC={setMostrarBares}
+              title="Bares"
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -264,3 +265,33 @@ function Routing({
 
   return null;
 }
+
+const Option = ({ value, image }: { value: string; image: string }) => {
+  return (
+    <div className="flex items-center justify-center gap-2 w-full rounded-lg bg-black/55 transition-all  cursor-pointer">
+      <input type="radio" name="transporte" value={value} />
+      <img src={image} width={25} height={25} />
+    </div>
+  );
+};
+
+const LabelInfo = ({
+  showWC,
+  setShowWC,
+  title,
+}: {
+  showWC: boolean;
+  setShowWC: (e: any) => void;
+  title: string;
+}) => {
+  return (
+    <div className="w-full flex gap-2 justify-center rounded-lg bg-black/55 p-2">
+      <input
+        type="checkbox"
+        checked={showWC}
+        onChange={(e) => setShowWC(e.target.checked)}
+      />
+      <p>{title}</p>
+    </div>
+  );
+};

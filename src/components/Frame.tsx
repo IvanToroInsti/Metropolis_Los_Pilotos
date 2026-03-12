@@ -9,9 +9,13 @@ interface Frame {
 export default function MobileFrame({ children }: Frame) {
   const navigate = useNavigate();
   return (
-    <div className="fixed w-full sm:relative flex sm:items-center justify-center sm:min-h-screen bg-gray-100 sm:p-4">
+    <div
+      className="fixed w-full sm:relative flex sm:items-center justify-center sm:min-h-screen sm:p-4 bg-no-repeat bg-cover bg-bottom"
+      style={{ backgroundImage: "url('body.jpg')" }}
+    >
+      <div className="absolute inset-0 bg-black/55 backdrop-blur-xs"></div>
       {/* Cuerpo del teléfono */}
-      <div className="relative w-full sm:max-w-75 h-screen md:h-150 max-h-162.5 sm:rounded-[3rem] sm:border-8 sm:border-gray-800 shadow-2xl overflow-hidden">
+      <div className="relative w-full sm:max-w-75 h-screen md:h-150 max-h-162.5 sm:rounded-[3rem] sm:border-8 shadow-2xl overflow-hidden">
         {/* Altavoz / Notch superior */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-black rounded-b-2xl z-20 hidden sm:block">
           <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 bg-gray-700 rounded-full"></div>
