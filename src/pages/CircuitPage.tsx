@@ -6,6 +6,8 @@ import "leaflet-routing-machine";
 import { useEffect, useRef, useState } from "react";
 import { puertas, tribunas, baños, bares } from "../data/points";
 
+import * as L from "leaflet";
+
 const circuitCoords: [number, number] = [41.56919, 2.258137];
 
 // Marcador azul para WC
@@ -122,14 +124,14 @@ export function CircuitPage() {
         />
 
         {mostrarWC &&
-          baños.map((b) => (
+          baños.map((b: any) => (
             <Marker key={b.id} position={[b.lat, b.lng]} icon={wcIcon}>
               <Popup>{b.nom}</Popup>
             </Marker>
           ))}
 
         {mostrarBares &&
-          bares.map((b) => (
+          bares.map((b: any) => (
             <Marker key={b.id} position={[b.lat, b.lng]} icon={barIcon}>
               <Popup>{b.nom}</Popup>
             </Marker>
