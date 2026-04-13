@@ -1,21 +1,19 @@
-version: '3.1'
 services:
   server:
     container_name: server
     restart: always
     build: ./server
+    ports:
+      - "3000:3000"
+    env_file:
+      - path: ./server/.env
+        required: true
   
   web:
     container_name: web
-    restart: always
     build: ./web
     volumes:
-      - ./static:/app/build
-
-  database:
-    container_name: mariadb
-    restart: always
-    build: ./db
+      - web_data:/app/dist
 
   nginx:
     build: ./nginx
@@ -31,3 +29,10 @@ services:
     depends_on:
       - server
       - web
+
+volumes:
+  web_data:
+  # database:
+  #   container_name: mariadb
+  #   restart: always
+  #   build: ./db
