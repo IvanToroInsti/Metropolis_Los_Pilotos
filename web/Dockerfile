@@ -1,4 +1,4 @@
-FROM node:24.14-bookworm
+FROM node:24-bookworm
 WORKDIR /app
 
 COPY ./package*.json ./
