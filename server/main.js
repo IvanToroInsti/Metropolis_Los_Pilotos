@@ -30,11 +30,7 @@ app.use(express.json());
 
 app.use(sessionMiddleware);
 
-app.get("/", (req,res) => {
-    res.json({message:"Server funcionando correctamente!"});
-})
-
-app.use('/api', router);
+app.use('/', router);
 
 app.use((req, res, next) => {
     res.status(404).json({
@@ -42,7 +38,6 @@ app.use((req, res, next) => {
         message: `La ruta ${req.originalUrl} no existe en este servidor.`
     });
 });
-
 
 app.listen(PORT,ADDRESS, () => {
     console.log(`Server funcionando en http://${ADDRESS}:${PORT}`);
