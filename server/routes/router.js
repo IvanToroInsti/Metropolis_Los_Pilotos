@@ -20,6 +20,10 @@ router.post("/user", (req, res) => {});
 // @desc    Actualizar perfil (Entrada: {nombre, telefono} | Salida: {message})
 router.put("/user/:id", (req, res) => {});
 
+// @route   DELETE /user/:id
+// @desc    Eliminar usuario perfil (Salida: {message})
+router.delete("/user/:id", (req, res) => {});
+
 
 // --- GESTIÓN DE ANUNCIOS ---
 // @route   GET /anuncio
@@ -65,5 +69,13 @@ router.get("/rol", (req, res) => {});
 // @route   POST /user/:id/rol
 // @desc    Asignar rol a usuario (Entrada: {id_rol} | Salida: {message})
 router.post("/user/:id/rol", (req, res) => {});
+
+// @route   PUT /user/:id/rol
+// @desc    Actualizar rol(Entrada: {id_rol} | Salida: {message})
+router.put("/rol/:id/rol", (req, res) => {});
+
+// @route   POST /user/:id/rol
+// @desc    Asignar rol a usuario (Entrada: {id_rol} | Salida: {message})
+router.delete("/user/:id/rol", (req, res) => {});
 
 module.exports = { router };

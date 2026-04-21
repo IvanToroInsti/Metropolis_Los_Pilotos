@@ -1,6 +1,6 @@
 services:
   server:
-    container_name: server
+    # container_name: server
     restart: always
     build: ./server
     ports:
@@ -10,13 +10,13 @@ services:
         required: true
   
   web:
-    container_name: web
+    # container_name: web
     build: ./web
     volumes:
       - web_data:/app/dist
 
   nginx:
-    container_name: nginx
+    # container_name: nginx
     image: nginx:stable-alpine3.23-perl
     restart: always
     ports:
@@ -31,7 +31,7 @@ services:
       - web
 
   database:
-    container_name: mariadb
+    # container_name: mariadb
     image: mariadb:latest
     restart: always
 
