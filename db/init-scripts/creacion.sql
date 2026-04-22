@@ -14,7 +14,7 @@ CREATE TABLE usuario (
   telefono VARCHAR(20),
   correo VARCHAR(100) NOT NULL,
   contrasena VARCHAR(200) NOT NULL,
-  PRIMARY KEY (id_usuario) ON DELETE CASCADE
+  PRIMARY KEY (id_usuario)
 );
 
 -- 3. Tabla intermedia Usuario-Rol (Relación N:M)
@@ -55,3 +55,11 @@ CREATE TABLE punto (
   PRIMARY KEY (id_punto),
   FOREIGN KEY (id_autor) REFERENCES usuario(id_usuario)
 );
+
+CREATE USER IF NOT EXISTS 'sys_admin'@'172.18.%.%' IDENTIFIED BY 'hola1234';
+GRANT ALL PRIVILEGES ON lospilotos_db.* TO 'sys_admin'@'172.18.%.%';
+
+CREATE USER IF NOT EXISTS 'dev_user'@'172.18.%.%' IDENTIFIED BY 'hola1234';
+GRANT SELECT, INSERT, UPDATE, DELETE ON lospilotos_db.* TO 'dev_user'@'172.18.%.%';
+
+FLUSH PRIVILEGES;
