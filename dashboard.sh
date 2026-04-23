@@ -35,19 +35,14 @@ ${AZUL}2.${RESET} Contenedor web
 ${AZUL}3.${RESET} Contenedor Server
 ${AZUL}4.${RESET} Contenedor database\n"
 
-<<<<<<< HEAD
 continuar="${VERDE}[*] Presione enter para continuar...${RESET}\n"
 destino="${VERDE}Ingresa el destino (Default: ./backups):${RESET} "
 opc="${AZUL}Opción: ${RESET}"
 question="${ROJO}¿Estas seguro? (Y,n):${RESET} "
 error="${ROJO}Entrada inválida, vuelve a intentar${RESET}\n"
-=======
-continuar="\n${VERDE}[*] Presione enter para continuar...${RESET}\n"
-destino="${VERDE}Ingresa el destino (Default: ./backups):${RESET} "
-opc="${AZUL}Opción: ${RESET}"
-question="${ROJO}¿Estas seguro? (Y,n):${RESET} "
-error="${ROJO}Entrada inválida, vuelve a intentar${RESET}"
->>>>>>> main
+
+# Obtiene el directorio donde está el script actual
+DIR_SCRIPT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 backups() {
     # 1. Usamos la expansión de parámetros para el default
@@ -91,7 +86,6 @@ acciones(){
                 ;;
 
             "2") # 	2. Acceder a contenedor
-<<<<<<< HEAD
 
                 printf "${AZUL}Contenedores activos: ${RESET}\n"
                 docker ps --format "{{.Names}}"
@@ -108,11 +102,6 @@ acciones(){
                 else
                     printf "\n${ROJO}No se ha logrado establecer conexión con la máquina.${RESET}"
                 fi
-=======
-                echo "$contenedores"
-                printf "$opc"
-                read seleccion
->>>>>>> main
                 ;;
 
             "3") # 	3. Crear copia de seguridad base de datos
@@ -135,31 +124,19 @@ acciones(){
                 ;;
 
             "6") # 	6. Iniciar contenedores (todos)
-<<<<<<< HEAD
                 printf "$question"
                 read success
                 printf "${VERDE}¿Iniciar contenedores en segundo plano? (y,N): ${RESET}"
                 read detached
-=======
-                read -p "$question" success
-                read -p "¿Iniciar contenedores en segundo plano? (y,N): " detached
->>>>>>> main
 
                 if [[ "$success" == "Y" ]]; then
                     echo ""
                     if [[ "$detached" != "N" ]]; then
                         # Modo en segundo plano
-<<<<<<< HEAD
-                        docker compose -f /los_pilotos/docker-compose.yml up -d
+                        docker compose -f "$DIR_SCRIPT/docker-compose.yml" up -d
                     else
                         # Modo en primer plano (sin -d)
-                        docker compose -f /los_pilotos/docker-compose.yml up
-=======
-                        docker compose -f /home/diego/los_pilotos/docker-compose.yml up -d
-                    else
-                        # Modo en primer plano (sin -d)
-                        docker compose -f /home/diego/los_pilotos/docker-compose.yml up
->>>>>>> main
+                        docker compose -f "$DIR_SCRIPT/docker-compose.yml" up -d
                     fi
                 elif [[ "$success" != "n" ]]; then
                     printf "%s" "$error"
@@ -168,53 +145,32 @@ acciones(){
                 ;;
 
             "7") # 	7. Detener contenedores (todos)
-<<<<<<< HEAD
                 printf "$question"
                 read success
 
-                docker compose -f /los_pilotos/docker-compose.yml stop
-=======
-                read -p "$question" success
-
-                docker compose -f /home/diego/los_pilotos/docker-compose.yml stop
->>>>>>> main
+                docker compose -f "$DIR_SCRIPT/docker-compose.yml" stop
 
                 ;;
 
             "8") # 	8. Recrear contenedores - Volver a compilar (todos)
-<<<<<<< HEAD
                 printf "$question"
                 read success
 
-                docker compose down
-                docker compose up --build -d
-=======
-                read -p "$question" success
-
-                docker compose down
-                docker compose up --build
->>>>>>> main
+                docker compose -f "$DIR_SCRIPT/docker-compose.yml" down
+                docker compose -f "$DIR_SCRIPT/docker-compose.yml" up --build -d
 
                 ;;
 
             "9") # 	8. Eliminar contenedores (todos)
-<<<<<<< HEAD
                 printf "$question"
                 read success
-=======
-                read -p "$question" success
->>>>>>> main
-                docker compose down -v
+                docker compose -f "$DIR_SCRIPT/docker-compose.yml" down -v
 
                 ;;
 
             "10") # 	9. Limpieza de imágenes sin uso
-<<<<<<< HEAD
                 printf "$question"
                 read success
-=======
-                read -p "$question" success
->>>>>>> main
 
                 docker system prune
                 ;;
@@ -240,11 +196,12 @@ do
                 ;;
 
             "2") # 2. Ver estado de los contenedores
-                docker ps --format "{{.Names}}|{{.ID}}|{{.Status}}|{{.RunningFor}}" |
-                while IFS="|" read -r name id status running; do
+                docker ps -a --format "{{.Names}}|{{.ID}}|{{.Status}}|{{.Ports}}|{{.RunningFor}}" | \
+                while IFS="|" read -r name id status ports running; do
                     printf "${VERDE}Nombre:${RESET} %s\n" "$name"
                     printf "${VERDE}ID:${RESET} %s\n" "$id"
                     printf "${VERDE}Estado:${RESET} %s\n" "$status"
+                    printf "${VERDE}Puertos:${RESET} %s\n" "$ports"
                     printf "${VERDE}Inicio hace:${RESET} %s\n---\n" "$running"
                 done
 
@@ -284,7 +241,6 @@ do
                 if [[ $EUID -ne 0 ]]
                 then
                     printf "${ROJO}[!] Para ejecutar acciones debe ser usuario root${RESET}\n"
-<<<<<<< HEAD
                 else
                     acciones
                 fi
@@ -297,40 +253,12 @@ do
             "6") # 6. Ayuda
             # Leer el archivo y aplicar colores con sed
             cat ./ayuda.txt
-=======
-                    exit 1
-                fi
-
-                acciones
-
-                ;;
-            "5") # 5. Version
-                echo "funciona"
-                ;;
-
-            "6") # 6. Ayuda
-                echo "funciona"
-                ;;
-            
-            "7") # 7. Salir
-                printf "${VERDE}[*] Saliendo...${RESET}\n"
-                exit 0
-                ;;
-
-            *)
-                echo "Entrada inválida, vuelve a intentar"
-                ;;
->>>>>>> main
         esac
 
     else
         printf "$error"
     fi
     printf "$continuar"
-<<<<<<< HEAD
-
-=======
->>>>>>> main
     read
     # clear
 
