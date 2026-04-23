@@ -1,0 +1,119 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                    AYUDA - MENU DE CONTROL                            ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+DESCRIPCION:
+    Script de control para gestionar contenedores Docker del proyecto
+    'Los Pilotos'. Permite monitorear el servidor, gestionar contenedores,
+    exportar logs y realizar acciones de mantenimiento.
+
+REQUISITOS:
+    • Docker y Docker Compose instalados
+    • Permisos de root para el menu de acciones (opcion 4)
+    • Archivo docker-compose.yml en /home/diego/los_pilotos/
+
+OPCIONES DEL MENU PRINCIPAL:
+
+    1. Ver estado del servidor
+       Muestra los procesos activos del sistema en tiempo real (comando top).
+       Util para verificar uso de CPU y memoria.
+
+    2. Ver estado de los contenedores
+       Lista todos los contenedores activos mostrando:
+       - Nombre del contenedor
+       - ID del contenedor
+       - Estado actual (running, exited, etc.)
+       - Tiempo transcurrido desde el inicio
+
+    3. Exportar logs de algun contenedor
+       Permite guardar los logs de un contenedor especifico en un archivo.
+       Contenedores disponibles:
+         • nginx      - Servidor web/proxy inverso
+         • web        - Aplicacion frontend
+         • server     - Aplicacion backend/API
+         • database   - Base de datos (MariaDB/MySQL)
+       
+       Puedes especificar una ruta personalizada o usar la predeterminada
+       (./backups/[nombre_contenedor].log)
+
+    4. Acciones
+       [REQUIERE ROOT] Menu avanzado de gestion de contenedores.
+       Ver seccion 'MENU DE ACCIONES' mas abajo.
+
+    5. Version
+       Muestra la version actual del script (0.1.0).
+
+    6. Ayuda
+       Muestra esta pantalla de ayuda.
+
+    7. Salir
+       Cierra el script de control.
+
+MENU DE ACCIONES (Opcion 4 - Requiere root):
+
+    1. Acceder a la base de datos
+       Ejecuta el script de acceso a MariaDB ubicado en ./db/scripts/mariadb.sh
+
+    2. Acceder a contenedor
+       Abre una terminal interactiva (bash o sh) dentro de un contenedor activo.
+       Primero muestra los contenedores en ejecucion para que elijas.
+
+    3. Crear copia de seguridad base de datos
+       Genera un backup de la base de datos en la ruta especificada.
+       Ruta por defecto: ./backups/
+
+    4. Reiniciar contenedor
+       Reinicia un contenedor especifico entre las opciones disponibles.
+
+    5. Detener contenedor
+       Detiene un contenedor especifico seleccionado del listado.
+
+    6. Iniciar contenedores (todos)
+       Levanta todos los servicios definidos en docker-compose.yml.
+       Opcion para ejecutar en segundo plano (-d) o primer plano.
+
+    7. Detener contenedores (todos)
+       Detiene todos los contenedores activos del proyecto.
+
+    8. Recrear contenedores - Volver a compilar
+       Elimina los contenedores existentes y los reconstruye desde cero.
+       Util despues de modificar Dockerfiles o configuraciones.
+
+    9. Eliminar contenedores (todos)
+       Elimina todos los contenedores y volumenes asociados (-v).
+       ¡CUIDADO! Esto borra datos persistentes.
+
+    10. Limpieza de imagenes sin uso
+       Ejecuta 'docker system prune' para eliminar imagenes, contenedores
+       detenidos, redes no utilizadas y caches de build.
+
+    11. Volver
+       Regresa al menu principal.
+
+CONTENEDORES DEL PROYECTO:
+
+    nginx     - Servidor web y proxy inverso
+    web       - Frontend de la aplicacion
+    server    - Backend/API del sistema
+    database  - Base de datos MariaDB/MySQL
+
+COMANDOS DOCKER UTILIZADOS INTERNAMENTE:
+
+    • docker ps                    - Listar contenedores activos
+    • docker compose logs           - Ver/exportar logs
+    • docker exec -it [container]    - Acceder a contenedor
+    • docker compose up/down         - Gestionar servicios
+    • docker compose up --build     - Reconstruir contenedores
+    • docker system prune           - Limpiar recursos sin uso
+
+NOTAS IMPORTANTES:
+
+    • Algunas acciones requieren privilegios de root.
+    • Las rutas de backup se crean automaticamente si no existen.
+    • Los archivos de log se guardan con extension .log.
+    • La ruta del docker-compose.yml esta hardcodeada:
+      /home/diego/los_pilotos/docker-compose.yml
+
+CONTACTO / SOPORTE:
+    Para reportar problemas o solicitar ayuda, contacta al equipo de
+    desarrollo de Los Pilotos.

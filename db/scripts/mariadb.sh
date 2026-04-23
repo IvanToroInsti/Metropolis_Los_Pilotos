@@ -1,0 +1,1 @@
+mariadb -h 172.18.0.1 -P 3306 -u sys_admin -p'hola1234'
