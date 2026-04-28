@@ -1,4 +1,6 @@
 const { Router } = require("express");
+const { query } = require("../db_conn/mariadb");
+const { jwt } = require("./jwt");
 
 const router = Router();
 // --- GESTIÓN DE ANUNCIOS ---
@@ -20,8 +22,21 @@ router.get("/", (req, res) => {
 
 // @route   POST /anuncio
 // @desc    Crear anuncio (Entrada: {titulo, descripcion, prioridad, publico, id_autor} | Salida: {id})
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
   const { titulo, descripcion, prioridad, publico, id_autor } = req.body;
+
+  if (!titulo || !descripcion || !id_autor) {
+    return res.status.json({
+      message: "Faltan datos mínimos para la creación de un anuncio",
+    });
+  }
+
+  const consulta = await query(
+    "INSERT INTO anuncio (titulo, descripcion, prioridad, publico, id_autor) VALUES (?,?,?,?,?)",
+    [titulo, descripcion, prioridad ?? 0, publico ?? 0, req.userid],
+  );
+
+  console.log(consulta);
 
   res.json({
     id: 1,

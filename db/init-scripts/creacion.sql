@@ -34,8 +34,7 @@ CREATE TABLE anuncio (
   descripcion TEXT,
   prioridad INT NOT NULL DEFAULT 0,
   publico BOOLEAN NOT NULL DEFAULT FALSE,
-  id_editor INT NOT NULL, -- El usuario que edita
-  id_autor INT NOT NULL,  -- El usuario que creó
+  id_autor INT NOT NULL, 
   creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id_anuncio),
   FOREIGN KEY (id_editor) REFERENCES usuario(id_usuario),

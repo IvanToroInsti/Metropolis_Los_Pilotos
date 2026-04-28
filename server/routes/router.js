@@ -7,7 +7,7 @@ const { user_router } = require("./user_router");
 const { anuncio_router } = require("./anuncio_router");
 const router = Router();
 
-router.get("/", (req, res) => {
+router.get("/status", (req, res) => {
   res.json({ message: "Servidor funcionando correctamente" });
 });
 

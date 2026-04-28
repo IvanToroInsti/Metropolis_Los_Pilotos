@@ -23,6 +23,15 @@ app.use((req, res, next) => {
   });
 });
 
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    status: 500,
+    message: "Ocurrió un error en el servidor",
+    error: process.env.NODE_ENV === "development" ? err.message : {},
+  });
+});
+
 app.listen(PORT, ADDRESS, () => {
   console.log(`Server funcionando en http://${ADDRESS}:${PORT}`);
 });
