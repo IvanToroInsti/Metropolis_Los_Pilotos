@@ -1,46 +1,121 @@
 const { Router } = require("express");
+const { query } = require("../db_conn/mariadb");
 
 const router = Router();
 
 // --- GESTIÓN DE PUNTOS ---
 // @route   GET /punto
 // @desc    Listar todos los puntos (Salida: [{id, titulo, latitud, longitud, publico}])
-router.get("/", (req, res) => {
-  res.json([
-    {
-      id: 1,
-      titulo: "Aeródromo Los Cerrillos",
-      latitud: -33.4928,
-      longitud: -70.6992,
-      publico: true,
-    },
-  ]);
+router.get("/", async (req, res) => {
+  const points = await query("SELECT * FROM punto");
+
+  res.json(points);
 });
 
 // @route   POST /punto
 // @desc    Crear punto (Entrada: {titulo, descripcion, latitud, longitud, publico, id_autor} | Salida: {id})
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
   const { titulo, descripcion, latitud, longitud, publico, id_autor } =
     req.body;
 
+  if (!titulo || !descripcion || !latitud || !longitud || !publico) {
+    return res.status(400).json({
+      message: "Faltan datos para escenciales para la creacion del punto",
+    });
+  }
+
+  if (id_autor !== undefined) {
+    const exists = await query("SELECT * FROM usuario WHERE id_usuario = ?", [
+      id_autor,
+    ]);
+
+    console.log(exists);
+
+    if (exists.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "No se ha encontrado el usuario" });
+    }
+  }
+
+  const point = await query(
+    "INSERT INTO punto(titulo, descripcion, latitud, longitud, publico, id_autor) VALUES (?,?,?,?,?,?)",
+    [
+      titulo,
+      descripcion,
+      latitud,
+      longitud,
+      publico ?? 0,
+      id_autor ?? req.userID,
+    ],
+  );
+
   res.json({
-    id: 1,
+    id: parseInt(point.insertId),
   });
 });
 
 // @route   PUT /punto/:id
 // @desc    Actualizar punto (Entrada: {titulo, descripcion, latitud, longitud, publico} | Salida: {message})
-router.put("/:id", (req, res) => {
+router.put("/:id", async (req, res) => {
   const { titulo, descripcion, latitud, longitud, publico } = req.body;
 
+  const exists = await query("SELECT * FROM punto WHERE id_punto=?", [
+    req.params.id,
+  ]);
+
+  if (exists.length === 0) {
+    return res.status(400).json({
+      message: "No se ha encontrado el punto",
+    });
+  }
+
+  if (!titulo && !descripcion && !latitud && !longitud && !publico) {
+    return res.status(400).json({
+      message: "Faltan datos mínimos para la actualización del punto",
+    });
+  }
+
+  const result = await query(
+    "UPDATE punto SET titulo=?, descripcion=?, latitud=?, longitud=?, publico=? WHERE id_punto=?",
+    [
+      titulo ?? exists[0].titulo,
+      descripcion ?? exists[0].descripcion,
+      latitud ?? exists[0].latitud,
+      longitud ?? exists[0].longitud,
+      publico ?? exists[0].publico,
+      req.params.id,
+    ],
+  );
+
   res.json({
-    message: "Punto actualizado correctamente",
+    message: "punto actualizado correctamente",
   });
 });
 
 // @route   DELETE /punto/:id
 // @desc    Eliminar punto (Salida: {message})
-router.delete("/:id", (req, res) => {
+router.delete("/:id", async (req, res) => {
+  const exists = await query("SELECT * FROM punto WHERE id_punto=?", [
+    req.params.id,
+  ]);
+
+  if (exists.length === 0) {
+    return res.status(400).json({
+      message: "No se ha encontrado el punto",
+    });
+  }
+
+  const del = await query("DELETE FROM punto WHERE id_punto = ?", [
+    req.params.id,
+  ]);
+
+  if (del.affectedRows === 0) {
+    return res
+      .status(500)
+      .json({ message: "No se ha podido eliminar el punto" });
+  }
+
   res.json({
     message: "Punto eliminado correctamente",
   });

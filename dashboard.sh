@@ -251,8 +251,13 @@ do
                 ;;
 
             "6") # 6. Ayuda
-            # Leer el archivo y aplicar colores con sed
-            cat ./ayuda.txt
+                # Leer el archivo y aplicar colores con sed
+                cat ./ayuda.txt
+                ;;
+
+            "7")
+                exit 0
+                ;;
         esac
 
     else

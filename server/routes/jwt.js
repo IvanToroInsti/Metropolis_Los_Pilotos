@@ -9,4 +9,8 @@ function sign(payload) {
   });
 }
 
-module.exports = { jwt, sign };
+function verify(token, errCb) {
+  return jwt.verify(token, JWT_SECRET, errCb);
+}
+
+module.exports = { jwt, sign, verify };

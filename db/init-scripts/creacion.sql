@@ -37,7 +37,6 @@ CREATE TABLE anuncio (
   id_autor INT NOT NULL, 
   creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id_anuncio),
-  FOREIGN KEY (id_editor) REFERENCES usuario(id_usuario),
   FOREIGN KEY (id_autor) REFERENCES usuario(id_usuario)
 );
 

@@ -1,21 +1,31 @@
-const { jwt } = require("./jwt");
+const { jwt, verify } = require("./jwt");
 
-const JWT_SECRET = process.env.JWT_SECRET || "no_secret";
+const verify_token = (req, res, next) => {
+  // 1. Obtener la cabecera de autorización
+  const authHeader = req.headers["authorization"];
 
-function verify_token(token) {
-  if (!token) throw new Error("Falta token");
+  // 2. Verificar que la cabecera existe y empieza con 'Bearer '
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    // 3. Extraer el token (quitando la palabra 'Bearer ')
+    const token = authHeader.split(" ")[1];
 
-  const exists = jwt.verify(token, JWT_SECRET);
+    // 4. Verificar el token
+    verify(token, (err, decoded) => {
+      if (err) {
+        return res.status(403).json({ message: "Token no válido" });
+      }
+      // Guardamos la info del usuario en el request para usarla luego
 
-  if (!exists) {
-    return false;
+      if (!decoded?.id_usuario) {
+        return res.status(403).json({ message: "Token no válido" });
+      }
+
+      req.userID = decoded.id_usuario;
+      next();
+    });
+  } else {
+    res.status(401).json({ message: "No autorizado, falta el token" });
   }
-
-  const token = jwt.decode(token);
-
-  console.log(token);
-
-  return token;
-}
+};
 
 module.exports = { verify_token };
