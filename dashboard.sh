@@ -27,8 +27,9 @@ ${AZUL}6.${RESET} iniciar contenedores (todos)
 ${AZUL}7.${RESET} Detener contenedores (todos)
 ${AZUL}8.${RESET} Recrear contenedores - Volver a compilar
 ${AZUL}9.${RESET} Eliminar contenedores (todos)
-${AZUL}10.${RESET} Limpieza de imágenes sin uso
-${AZUL}11.${RESET} Volver"
+${AZUL}10.${RESET}  Limpieza de imágenes sin uso
+${AZUL}11.${RESET}  Insertar datos de prueba Base de datos
+${AZUL}12.${RESET}  Volver"
 
 contenedores="${AZUL}1.${RESET} Contenedor nginx
 ${AZUL}2.${RESET} Contenedor web
@@ -82,7 +83,7 @@ acciones(){
         case $opcion in
             "1") # 	1. Acceder a la base de datos
                 echo "Por favor, espere..."
-                ./db/scripts/mariadb.sh
+                bash "$DIR_SCRIPT/db/scripts/mariadb.sh"
                 ;;
 
             "2") # 	2. Acceder a contenedor
@@ -161,18 +162,25 @@ acciones(){
 
                 ;;
 
-            "9") # 	8. Eliminar contenedores (todos)
+            "9")  # 	9. Limpieza de imágenes sin uso
                 printf "$question"
                 read success
                 docker compose -f "$DIR_SCRIPT/docker-compose.yml" down -v
 
                 ;;
 
-            "10") # 	9. Limpieza de imágenes sin uso
+            "10") 
                 printf "$question"
                 read success
 
                 docker system prune
+                ;;
+            "11")
+                printf "$question"
+                read success
+
+                echo "Por favor, espere..."
+                bash "$DIR_SCRIPT/pruebas/insertar_datos.sh"
                 ;;
         esac
     else

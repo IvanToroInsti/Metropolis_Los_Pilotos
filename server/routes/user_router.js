@@ -13,65 +13,77 @@ const saltsRound = 10;
 router.post("/login", async (req, res) => {
   const { correo, contrasena } = req.body;
 
-  let busqueda = await query("SELECT * FROM usuario WHERE correo=?", [correo]);
+  try {
+    let busqueda = await query("SELECT * FROM usuario WHERE correo=?", [
+      correo,
+    ]);
 
-  if (busqueda.length === 0) {
-    return res.status(404).json({
-      message: "Correo o contraseña inválida",
-      datos_recibidos:
-        process.env.NODE_ENV === "development" ? req.body : undefined,
+    if (busqueda.length === 0) {
+      return res.status(404).json({
+        message: "Correo o contraseña inválida",
+        datos_recibidos:
+          process.env.NODE_ENV === "development" ? req.body : undefined,
+      });
+    }
+
+    const user = busqueda[0];
+
+    const exists = await bcrypt.compare(contrasena, user.contrasena);
+
+    if (!exists) {
+      return res.status(404).json({
+        message: "Correo o contraseña inválida",
+        datos_recibidos:
+          process.env.NODE_ENV === "development" ? req.body : undefined,
+      });
+    }
+
+    const token = sign({ id_usuario: parseInt(user.id_usuario) });
+
+    res.json({
+      token: token,
+      usuario: {
+        id: user.id_usuario,
+        nombre: user.nombre,
+        correo: user.correo,
+        // roles: ["editor"],
+      },
+      datos_recibidos: req?.body || undefined,
     });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Error al iniciar sesión" });
   }
-
-  const user = busqueda[0];
-
-  const exists = await bcrypt.compare(contrasena, user.contrasena);
-
-  if (!exists) {
-    return res.status(404).json({
-      message: "Correo o contraseña inválida",
-      datos_recibidos:
-        process.env.NODE_ENV === "development" ? req.body : undefined,
-    });
-  }
-
-  const token = sign({ id_usuario: parseInt(user.id_usuario) });
-
-  res.json({
-    token: token,
-    usuario: {
-      id: user.id_usuario,
-      nombre: user.nombre,
-      correo: user.correo,
-      // roles: ["editor"],
-    },
-    datos_recibidos: req?.body || undefined,
-  });
 });
 
 // @route   GET /user/:id
 // @desc    Obtener perfil (Salida: {id, nombre, telefono, correo})
 router.get("/:id", verify_token, async (req, res) => {
-  const busqueda = await query("SELECT * from usuario WHERE id_usuario=?", [
-    req.params.id,
-  ]);
+  try {
+    const busqueda = await query("SELECT * from usuario WHERE id_usuario=?", [
+      req.params.id,
+    ]);
 
-  if (busqueda.length === 0) {
-    return res.status(404).json({
-      message: "No se ha encontrado el usuario.",
+    if (busqueda.length === 0) {
+      return res.status(404).json({
+        message: "No se ha encontrado el usuario.",
+      });
+    }
+
+    const user = busqueda[0];
+
+    res.json({
+      id: user.id_usuario,
+      nombre: user.nombre,
+      telefono: user.telefono,
+      correo: user.correo,
+      datos_recibidos:
+        process.env.NODE_ENV === "development" ? req.body : undefined,
     });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Error al obtener el perfil" });
   }
-
-  const user = busqueda[0];
-
-  res.json({
-    id: user.id_usuario,
-    nombre: user.nombre,
-    telefono: user.telefono,
-    correo: user.correo,
-    datos_recibidos:
-      process.env.NODE_ENV === "development" ? req.body : undefined,
-  });
 });
 
 // @route   POST /user
@@ -79,25 +91,31 @@ router.get("/:id", verify_token, async (req, res) => {
 router.post("/", async (req, res) => {
   const { nombre, telefono, correo, contrasena } = req.body;
 
-  if (!nombre || !telefono || !correo) {
-    return res.status(400).json({
-      message: "Faltan datos mínimos",
+  try {
+    if (!nombre || !telefono || !correo) {
+      return res.status(400).json({
+        message: "Faltan datos mínimos",
+      });
+    }
+
+    const passwordHash = await bcrypt.hash(contrasena, saltsRound);
+
+    const consulta = await query(
+      "INSERT INTO usuario(nombre, telefono, correo, contrasena) VALUES (?, ?, ?, ?)",
+      [nombre, telefono, correo, passwordHash],
+    );
+
+    const token = sign({ id_usuario: parseInt(consulta.insertId) });
+
+    res.json({
+      token: token,
+      id_usuario: parseInt(consulta.insertId),
+      datos_recibidos: req.body,
     });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Error al registrar al usuario" });
   }
-
-  const passwordHash = await bcrypt.hash(contrasena, saltsRound);
-
-  const consulta = await query(
-    "INSERT INTO usuario(nombre, telefono, correo, contrasena) VALUES (?, ?, ?, ?)",
-    [nombre, telefono, correo, passwordHash],
-  );
-
-  const token = sign({ id_usuario: parseInt(consulta.insertId) });
-
-  res.json({
-    token: token,
-    datos_recibidos: req.body,
-  });
 });
 
 // @route   PUT /user/:id
@@ -111,51 +129,61 @@ router.put("/:id", verify_token, async (req, res) => {
     });
   }
 
-  const user = await query(
-    "SELECT * FROM usuario WHERE id_usuario=?",
-    req.params.id,
-  );
+  try {
+    const user = await query(
+      "SELECT * FROM usuario WHERE id_usuario=?",
+      req.params.id,
+    );
 
-  if (user.length === 0) {
-    return res.status(404).json({
-      message: "No se ha encontrado el usuario",
+    if (user.length === 0) {
+      return res.status(404).json({
+        message: "No se ha encontrado el usuario",
+      });
+    }
+
+    const result = await query(
+      "UPDATE usuario SET nombre=?, telefono=? WHERE id_usuario=?",
+      [nombre ?? user[0].nombre, telefono ?? user[0].telefono, req.params.id],
+    );
+
+    res.json({
+      message: "Perfil actualizado correctamente",
+      datos_recibidos:
+        process.env.NODE_ENV === "development" ? req.body : undefined,
     });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Error al actualizar al usuario" });
   }
-
-  const result = await query(
-    "UPDATE usuario SET nombre=?, telefono=? WHERE id_usuario=?",
-    [nombre ?? user[0].nombre, telefono ?? user[0].telefono, req.params.id],
-  );
-
-  res.json({
-    message: "Perfil actualizado correctamente",
-    datos_recibidos:
-      process.env.NODE_ENV === "development" ? req.body : undefined,
-  });
 });
 
 // @route   DELETE /user/:id
 // @desc    Eliminar usuario perfil (Salida: {message})
 router.delete("/:id", verify_token, async (req, res) => {
-  const user = await query(
-    "SELECT * FROM usuario WHERE id_usuario=?",
-    req.params.id,
-  );
+  try {
+    const user = await query(
+      "SELECT * FROM usuario WHERE id_usuario=?",
+      req.params.id,
+    );
 
-  if (user.length === 0) {
-    return res.status(404).json({
-      message: "No se ha encontrado el usuario",
+    if (user.length === 0) {
+      return res.status(404).json({
+        message: "No se ha encontrado el usuario",
+      });
+    }
+
+    const result = await query("DELETE FROM usuario WHERE id_usuario=?", [
+      req.params.id,
+    ]);
+
+    res.json({
+      message: "Usuario eliminado correctamente",
+      datos_recibidos: req.body,
     });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Error al eliminar al usuario" });
   }
-
-  const result = await query("DELETE FROM usuario WHERE id_usuario=?", [
-    req.params.id,
-  ]);
-
-  res.json({
-    message: "Usuario eliminado correctamente",
-    datos_recibidos: req.body,
-  });
 });
 
 // @route   POST /user/:id/rol
