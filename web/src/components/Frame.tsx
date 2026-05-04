@@ -1,77 +1,123 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FirstFrame } from "../pages/FirstFrame";
 
-interface Frame {
-  children: React.ReactNode; // Cambiado a ReactNode para mayor flexibilidad
-}
-
-// este es el componente que carga el marco del IPHONE en children va el contenido, dentro de las etiquetas
-export default function MobileFrame({ children }: Frame) {
+export default function MobileFrame() {
   const navigate = useNavigate();
+
+  const [appOpen, setAppOpen] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+
+  const [correo, setCorreo] = useState("");
+  const [contrasena, setContrasena] = useState("");
+
+  const openApp = () => {
+    setAppOpen(true);
+    setShowLogin(false);
+  };
+
+  const resetPhone = () => {
+    setAppOpen(false);
+    setShowLogin(false);
+    navigate("/");
+  };
+
+  const handleLogin = async () => {
+    try {
+      const res = await fetch("http://localhost:3308/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          correo,
+          contrasena,
+        }),
+      });
+
+      const data = await res.json();
+
+      console.log("LOGIN:", data);
+
+      if (res.ok) {
+        navigate("/app"); // ✔ entra a la app real
+      } else {
+        alert(data.message || "Error en login");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error de servidor");
+    }
+  };
+
   return (
     <div
       className="fixed w-full sm:relative flex sm:items-center justify-center sm:min-h-screen sm:p-4 bg-no-repeat bg-cover bg-bottom"
       style={{ backgroundImage: "url('body.jpg')" }}
     >
-      <div className="absolute inset-0 bg-black/55 backdrop-blur-xs"></div>
-      {/* Cuerpo del teléfono */}
-      <div className="relative w-full sm:max-w-75 h-screen md:h-150 max-h-162.5 sm:rounded-[3rem] sm:border-8 shadow-2xl overflow-hidden">
-        {/* Altavoz / Notch superior */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-black rounded-b-2xl z-20 hidden sm:block">
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 bg-gray-700 rounded-full"></div>
-        </div>
+      <div className="absolute inset-0 bg-black/55 backdrop-blur-xs pointer-events-none" />
 
-        {/* Pantalla (Contenido) */}
-        <div className="w-full h-full overflow-hidden sm:border">
-          {/* Esta es la barra de notificaciones, su componente está más abajo */}
+      <div className="relative w-full sm:max-w-75 h-screen md:h-150 max-h-162.5 sm:rounded-[3rem] sm:border-8 shadow-2xl overflow-hidden">
+
+        <div className="w-full h-full overflow-hidden sm:border bg-[#1c1d2b]">
           <NotiBar />
-          {children}
-        </div>
-        {/* Barra de inicio inferior (iOS style) */}
-        <div
-          className="absolute bottom-1 w-full group cursor-pointer "
-          onClick={() => {
-            navigate("/");
-          }}
-        >
-          <div className="hidden sm:visible w-1/2 mx-auto h-1 bg-gray-300 rounded-full mb-1 duration-150 group-active:-translate-y-1"></div>
+
+          {!appOpen ? (
+            <FirstFrame onAppClick={openApp} />
+          ) : !showLogin ? (
+            <div className="w-full h-full flex items-center justify-center bg-black/30">
+              <div className="bg-white p-5 rounded-xl shadow-xl w-64 text-center">
+                <h1 className="text-lg font-bold mb-3">Login</h1>
+
+                <input
+                  className="w-full border-2 border-[#E61415] p-2 mb-2 rounded"
+                  placeholder="Correo"
+                  value={correo}
+                  onChange={(e) => setCorreo(e.target.value)}
+                />
+
+                <input
+                  className="w-full border-2 border-[#E61415] p-2 mb-3 rounded"
+                  type="password"
+                  placeholder="Contraseña"
+                  value={contrasena}
+                  onChange={(e) => setContrasena(e.target.value)}
+                />
+
+                <button
+                  onClick={handleLogin}
+                  className="w-full bg-[#E61415] text-white py-2 rounded"
+                >
+                  Entrar
+                </button>
+
+                <button
+                  onClick={resetPhone}
+                  className="w-full mt-2 text-sm text-gray-500"
+                >
+                  Volver al inicio
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-white">
+              APP CARGADA
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-// Este es el componente de la barra de notificaciones
 function NotiBar() {
   const date = new Date();
+
   return (
-    <>
-      {/* Status Bar iOS */}
-      <div className="hidden sm:visible top-0 left-0 w-full h-8 px-6 sm:flex items-center justify-between text-[11px] font-medium text-white z-20 bg-[#25263A]">
-        {/* Hora */}
-        <span className="tracking-tight">
-          {date.getHours()}:{date.getMinutes()}
-        </span>
-
-        {/* Indicadores derecha */}
-        <div className="flex items-center gap-1.5">
-          {/* Señal */}
-          <div className="flex items-end gap-0.5">
-            <span className="w-0.5 h-1 bg-white rounded-sm"></span>
-            <span className="w-0.5 h-1.5 bg-white rounded-sm"></span>
-            <span className="w-0.5 h-2 bg-white rounded-sm"></span>
-            <span className="w-0.5 h-2.5 bg-white rounded-sm"></span>
-          </div>
-
-          {/* Batería */}
-          <div className="flex items-center gap-0.5">
-            <div className="w-5 h-3 border border-white rounded-sm relative">
-              <div className="absolute inset-px bg-white rounded-xs"></div>
-            </div>
-            <div className="w-0.5 h-1.5 bg-white rounded-sm"></div>
-          </div>
-        </div>
-      </div>
-    </>
+    <div className="w-full h-8 px-6 flex items-center justify-between text-[11px] text-white bg-[#25263A]">
+      <span>
+        {date.getHours()}:{String(date.getMinutes()).padStart(2, "0")}
+      </span>
+    </div>
   );
 }
