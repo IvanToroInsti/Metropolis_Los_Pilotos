@@ -71,7 +71,7 @@ backups() {
     fi
 
     # 4. Ejecutar el log
-    if docker compose logs "$contenedor" > "$ruta_destino" 2>&1; then
+    if docker logs "$contenedor" > "$ruta_destino" 2>&1; then
         printf "${VERDE}[+] Log de '%s' guardado en: %s${RESET}\n" "$contenedor" "$ruta_destino"
     else
         printf "${ROJO}[!] Error al obtener logs del contenedor: %s${RESET}\n" "$contenedor"
@@ -244,32 +244,15 @@ do
                 ;;
 
             "3") # 3. Exportar logs de algun contenedor
+                printf "${AZUL}Contenedores activos: ${RESET}\n"
+                docker ps --format '{{.Names}}'
+                printf "${nombre_contenedor}"
+                read seleccion
+
                 printf "$destino"
                 read r
 
-                printf "$contenedores"
-                printf "$opc"
-                read seleccion
-
-                contenedor=""
-
-                case $seleccion in
-                "1")
-                contenedor="nginx"
-                ;;
-                "2")
-                contenedor="web"
-                ;;
-                "3")
-                contenedor="server"
-                ;;
-                
-                "4")
-                contenedor="database"
-                ;;
-                esac
-
-                backups "$r" "$contenedor"
+                backups "$r" "$seleccion"
                 ;;
 
             "4") # 4. Acciones
@@ -292,6 +275,7 @@ do
                 ;;
 
             "7")
+                printf "${VERDE}Saliendo...${RESET}\n"
                 exit 0
                 ;;
         esac

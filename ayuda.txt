@@ -5,115 +5,134 @@
 DESCRIPCION:
     Script de control para gestionar contenedores Docker del proyecto
     'Los Pilotos'. Permite monitorear el servidor, gestionar contenedores,
-    exportar logs y realizar acciones de mantenimiento.
+    exportar logs, administrar la base de datos y realizar tareas de mantenimiento.
 
 REQUISITOS:
     • Docker y Docker Compose instalados
     • Permisos de root para el menu de acciones (opcion 4)
-    • Archivo docker-compose.yml en /home/diego/los_pilotos/
+    • Archivo docker-compose.yml en la misma ruta que el script
 
 OPCIONES DEL MENU PRINCIPAL:
 
     1. Ver estado del servidor
-       Muestra los procesos activos del sistema en tiempo real (comando top).
-       Util para verificar uso de CPU y memoria.
+       Ejecuta 'top' para mostrar procesos en tiempo real.
+       Permite monitorear CPU, memoria y carga del sistema.
 
     2. Ver estado de los contenedores
-       Lista todos los contenedores activos mostrando:
-       - Nombre del contenedor
-       - ID del contenedor
-       - Estado actual (running, exited, etc.)
-       - Tiempo transcurrido desde el inicio
+       Lista TODOS los contenedores (activos o detenidos) mostrando:
+       - Nombre
+       - ID
+       - Estado
+       - Puertos
+       - Tiempo desde su inicio
 
     3. Exportar logs de algun contenedor
-       Permite guardar los logs de un contenedor especifico en un archivo.
-       Contenedores disponibles:
-         • nginx      - Servidor web/proxy inverso
-         • web        - Aplicacion frontend
-         • server     - Aplicacion backend/API
-         • database   - Base de datos (MariaDB/MySQL)
-       
-       Puedes especificar una ruta personalizada o usar la predeterminada
-       (./backups/[nombre_contenedor].log)
+       Permite guardar los logs de un contenedor en un archivo.
+       - Seleccionas el contenedor manualmente
+       - Puedes indicar ruta personalizada
+       - Ruta por defecto: ./backups/[contenedor].log
+       - Se crean directorios automáticamente si no existen
 
     4. Acciones
-       [REQUIERE ROOT] Menu avanzado de gestion de contenedores.
-       Ver seccion 'MENU DE ACCIONES' mas abajo.
+       [REQUIERE ROOT]
+       Acceso al menú avanzado de administración (ver más abajo)
 
     5. Version
-       Muestra la version actual del script (0.1.0).
+       Muestra la versión actual del script (0.1.0)
 
     6. Ayuda
-       Muestra esta pantalla de ayuda.
+       Muestra este archivo de ayuda (ayuda.txt)
 
     7. Salir
-       Cierra el script de control.
+       Finaliza la ejecución del script
+
 
 MENU DE ACCIONES (Opcion 4 - Requiere root):
 
     1. Acceder a la base de datos
-       Ejecuta el script de acceso a MariaDB ubicado en ./db/scripts/mariadb.sh
+       Conexión directa a MariaDB usando credenciales configuradas
+       (host: 172.18.0.1, puerto: 3306)
 
     2. Acceder a contenedor
-       Abre una terminal interactiva (bash o sh) dentro de un contenedor activo.
-       Primero muestra los contenedores en ejecucion para que elijas.
+       Abre una terminal interactiva dentro de un contenedor:
+       - Intenta usar bash
+       - Si no existe, usa sh
 
     3. Crear copia de seguridad base de datos
-       Genera un backup de la base de datos en la ruta especificada.
-       Ruta por defecto: ./backups/
+       Genera un dump SQL en:
+       ./dumps/dump-[fecha].sql
+       - Se crea la carpeta automáticamente si no existe
 
     4. Reiniciar contenedor
-       Reinicia un contenedor especifico entre las opciones disponibles.
+       Reinicia un contenedor seleccionado manualmente
 
     5. Detener contenedor
-       Detiene un contenedor especifico seleccionado del listado.
+       Detiene un contenedor específico
 
     6. Iniciar contenedores (todos)
-       Levanta todos los servicios definidos en docker-compose.yml.
-       Opcion para ejecutar en segundo plano (-d) o primer plano.
+       Levanta todos los servicios definidos en docker-compose.yml
+       - Pregunta confirmación
+       - Permite modo segundo plano (-d)
 
     7. Detener contenedores (todos)
-       Detiene todos los contenedores activos del proyecto.
+       Ejecuta:
+       docker compose stop
 
     8. Recrear contenedores - Volver a compilar
-       Elimina los contenedores existentes y los reconstruye desde cero.
-       Util despues de modificar Dockerfiles o configuraciones.
+       Ejecuta:
+       docker compose down
+       docker compose up --build -d
+       Útil tras cambios en Dockerfiles o configuración
 
-    9. Eliminar contenedores (todos)
-       Elimina todos los contenedores y volumenes asociados (-v).
-       ¡CUIDADO! Esto borra datos persistentes.
+    9. Eliminar contenedores y volúmenes
+       Ejecuta:
+       docker compose down -v
+       ⚠ Elimina datos persistentes
 
-    10. Limpieza de imagenes sin uso
-       Ejecuta 'docker system prune' para eliminar imagenes, contenedores
-       detenidos, redes no utilizadas y caches de build.
+    10. Limpieza de imágenes sin uso
+        Ejecuta:
+        docker system prune
+        Elimina:
+        - Imágenes no usadas
+        - Contenedores detenidos
+        - Redes y cache
 
-    11. Volver
-       Regresa al menu principal.
+    11. Insertar datos de prueba en base de datos
+        Ejecuta un script SQL desde:
+        ./pruebas/datos.sql
 
-CONTENEDORES DEL PROYECTO:
+    12. Volver
+        Regresa al menú principal
 
-    nginx     - Servidor web y proxy inverso
-    web       - Frontend de la aplicacion
-    server    - Backend/API del sistema
-    database  - Base de datos MariaDB/MySQL
 
-COMANDOS DOCKER UTILIZADOS INTERNAMENTE:
+CONTENEDORES DEL PROYECTO (referencia):
 
-    • docker ps                    - Listar contenedores activos
-    • docker compose logs           - Ver/exportar logs
-    • docker exec -it [container]    - Acceder a contenedor
-    • docker compose up/down         - Gestionar servicios
-    • docker compose up --build     - Reconstruir contenedores
-    • docker system prune           - Limpiar recursos sin uso
+    nginx     - Servidor web / proxy inverso
+    web       - Frontend
+    server    - Backend / API
+    database  - Base de datos MariaDB
+
+
+COMANDOS UTILIZADOS INTERNAMENTE:
+
+    • docker ps / docker ps -a
+    • docker logs
+    • docker exec -it
+    • docker restart / stop
+    • docker compose up/down/stop
+    • docker system prune
+    • mysqldump
+    • mariadb (cliente CLI)
+
 
 NOTAS IMPORTANTES:
 
-    • Algunas acciones requieren privilegios de root.
-    • Las rutas de backup se crean automaticamente si no existen.
-    • Los archivos de log se guardan con extension .log.
-    • La ruta del docker-compose.yml esta hardcodeada:
-      /home/diego/los_pilotos/docker-compose.yml
+    • El menú de acciones solo funciona como root (EUID = 0)
+    • Las rutas de backup y dumps se crean automáticamente
+    • Los logs se guardan con extensión .log
+    • Algunas acciones piden confirmación (Y/n)
+    • El script usa rutas relativas al directorio donde se ejecuta
+
 
 CONTACTO / SOPORTE:
-    Para reportar problemas o solicitar ayuda, contacta al equipo de
-    desarrollo de Los Pilotos.
+    Para soporte, contactar con el equipo de desarrollo de Los Pilotos.
