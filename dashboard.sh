@@ -29,7 +29,7 @@ ${AZUL}8.${RESET} Recrear contenedores - Volver a compilar
 ${AZUL}9.${RESET} Eliminar contenedores (todos)
 ${AZUL}10.${RESET}  Limpieza de imágenes sin uso
 ${AZUL}11.${RESET}  Insertar datos de prueba Base de datos
-${AZUL}12.${RESET}  Volver"
+${AZUL}12.${RESET}  Volver\n"
 
 contenedores="${AZUL}1.${RESET} Contenedor nginx
 ${AZUL}2.${RESET} Contenedor web
@@ -44,6 +44,12 @@ error="${ROJO}Entrada inválida, vuelve a intentar${RESET}\n"
 
 # Obtiene el directorio donde está el script actual
 DIR_SCRIPT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+nombre_contenedor="${VERDE}Ingresar nombre del contenedor: ${RESET}"
+
+db_user="sys_admin"
+db_pass="hola1234"
+db_name="lospilotos_db"
 
 backups() {
     # 1. Usamos la expansión de parámetros para el default
@@ -73,7 +79,7 @@ backups() {
 }
 
 acciones(){
-    echo -e "$menu2"
+    printf "$menu2"
     printf "$opc"
     read opcion
 
@@ -82,16 +88,15 @@ acciones(){
         # clear
         case $opcion in
             "1") # 	1. Acceder a la base de datos
-                echo "Por favor, espere..."
-                bash "$DIR_SCRIPT/db/scripts/mariadb.sh"
+                printf "Por favor, espere..."
+                mariadb -h 172.18.0.1 -P 3306 -u ${db_user} -p${db_pass} ${db_name}
                 ;;
 
             "2") # 	2. Acceder a contenedor
-
                 printf "${AZUL}Contenedores activos: ${RESET}\n"
                 docker ps --format "{{.Names}}"
 
-                printf "${VERDE}Ingresar nombre del contenedor: ${RESET}"
+                printf "${nombre_contenedor}"
                 read seleccion
                 
                 # ¿Tiene bash?
@@ -106,22 +111,45 @@ acciones(){
                 ;;
 
             "3") # 	3. Crear copia de seguridad base de datos
-                printf "$destino"
-                read dest
+                timestamp=$(date +"%Y-%m-%d_%H-%M-%S")
+                if ! mkdir -p "./dumps"; then
+                    printf "${ROJO}[!] No se pudo crear el directorio: $(pwd)/dumps${RESET}\n"
+                    return 1
+                fi
 
-                backups $dest
+                if mysqldump -h 172.18.0.1 -u ${db_user} -p${db_pass} ${db_name} > "./dumps/dump-${timestamp}.sql"; then
+                    printf "${VERDE}[+] Backup creado con éxito: dump-${timestamp}.sql${RESET}\n"
+                else
+                    printf "${ROJO}[!] Error al exportar la base de datos${RESET}\n"
+                fi
                 ;;
 
             "4") # 	4.Reiniciar contenedor
-                echo "$contenedores"
-                printf "$opc"
+                printf "${AZUL}Contenedores activos: ${RESET}\n"
+                docker ps --format "{{.Names}}"
+
+                printf "${nombre_contenedor}"
                 read seleccion
+                
+                if docker restart "${seleccion}"; then
+                    printf "${VERDE}[+] Contenedor ${AZUL}${seleccion}${RESET} ${VERDE}reiniciado con éxito.${RESET}\n"
+                else
+                    printf "${ROJO}[!] Error al reiniciar el contenedor.${RESET}\n"
+                fi
                 ;;
 
             "5") # 	5. Detener contenedor
-                echo "$contenedores"
-                printf "$opc"
+                printf "${AZUL}Contenedores activos: ${RESET}\n"
+                docker ps --format "{{.Names}}"
+
+                printf "${nombre_contenedor}"
                 read seleccion
+                
+                if docker stop "${seleccion}"; then
+                    printf "${VERDE}[+] Contenedor ${AZUL}${seleccion}${RESET} ${VERDE}detenido con éxito.${RESET}\n"
+                else
+                    printf "${ROJO}[!] Error al reiniciar el contenedor.${RESET}\n"
+                fi
                 ;;
 
             "6") # 	6. Iniciar contenedores (todos)
@@ -179,8 +207,8 @@ acciones(){
                 printf "$question"
                 read success
 
-                echo "Por favor, espere..."
-                bash "$DIR_SCRIPT/pruebas/insertar_datos.sh"
+                printf "${VERDE}Por favor, espere...${RESET}"
+                mariadb -h 172.18.0.1 -P 3306 -u ${db_user} -p${db_pass} ${db_name} < "$(pwd)/pruebas/datos.sql"
                 ;;
         esac
     else
