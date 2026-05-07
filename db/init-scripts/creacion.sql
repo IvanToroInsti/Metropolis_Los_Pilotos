@@ -54,10 +54,10 @@ CREATE TABLE punto (
   FOREIGN KEY (id_autor) REFERENCES usuario(id_usuario)
 );
 
-CREATE USER IF NOT EXISTS 'sys_admin'@'172.18.%.%' IDENTIFIED BY 'hola1234';
-GRANT ALL PRIVILEGES ON lospilotos_db.* TO 'sys_admin'@'172.18.%.%';
+CREATE USER IF NOT EXISTS 'sys_admin'@'%' IDENTIFIED BY 'hola1234';
+GRANT ALL PRIVILEGES ON lospilotos_db.* TO 'sys_admin'@'%';
 
-CREATE USER IF NOT EXISTS 'dev_user'@'172.18.%.%' IDENTIFIED BY 'hola1234';
-GRANT SELECT, INSERT, UPDATE, DELETE ON lospilotos_db.* TO 'dev_user'@'172.18.%.%';
+CREATE USER IF NOT EXISTS 'dev_user'@'%' IDENTIFIED BY 'hola1234';
+GRANT SELECT, INSERT, UPDATE, DELETE ON lospilotos_db.* TO 'dev_user'@'%';
 
 FLUSH PRIVILEGES;

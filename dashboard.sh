@@ -50,6 +50,7 @@ nombre_contenedor="${VERDE}Ingresar nombre del contenedor: ${RESET}"
 db_user="sys_admin"
 db_pass="hola1234"
 db_name="lospilotos_db"
+db_container_addr="172.18.0.1"
 
 backups() {
     # 1. Usamos la expansión de parámetros para el default
@@ -89,7 +90,7 @@ acciones(){
         case $opcion in
             "1") # 	1. Acceder a la base de datos
                 printf "${VERDE}Por favor, espere...${RESET}\n"
-                mariadb -h 172.18.0.1 -P 3306 -u ${db_user} -p${db_pass} ${db_name}
+                mariadb -h ${db_container_addr} -P 3306 -u ${db_user} -p${db_pass} ${db_name}
                 ;;
 
             "2") # 	2. Acceder a contenedor
@@ -117,7 +118,7 @@ acciones(){
                     return 1
                 fi
 
-                if mysqldump -h 172.18.0.1 -u ${db_user} -p${db_pass} ${db_name} > "./dumps/dump-${timestamp}.sql"; then
+                if mysqldump -h ${db_container_addr} -u ${db_user} -p${db_pass} ${db_name} > "./dumps/dump-${timestamp}.sql"; then
                     printf "${VERDE}[+] Backup creado con éxito: dump-${timestamp}.sql${RESET}\n"
                 else
                     printf "${ROJO}[!] Error al exportar la base de datos${RESET}\n"
@@ -208,7 +209,7 @@ acciones(){
                 read success
 
                 printf "${VERDE}Por favor, espere...${RESET}\n"
-                mariadb -h 172.18.0.1 -P 3306 -u ${db_user} -p${db_pass} ${db_name} < "$(pwd)/pruebas/datos.sql"
+                mariadb -h ${db_container_addr} -P 3306 -u ${db_user} -p${db_pass} ${db_name} < "$(pwd)/pruebas/datos.sql"
                 ;;
         esac
     else
