@@ -88,7 +88,7 @@ acciones(){
         # clear
         case $opcion in
             "1") # 	1. Acceder a la base de datos
-                printf "Por favor, espere..."
+                printf "${VERDE}Por favor, espere...${RESET}\n"
                 mariadb -h 172.18.0.1 -P 3306 -u ${db_user} -p${db_pass} ${db_name}
                 ;;
 
@@ -207,7 +207,7 @@ acciones(){
                 printf "$question"
                 read success
 
-                printf "${VERDE}Por favor, espere...${RESET}"
+                printf "${VERDE}Por favor, espere...${RESET}\n"
                 mariadb -h 172.18.0.1 -P 3306 -u ${db_user} -p${db_pass} ${db_name} < "$(pwd)/pruebas/datos.sql"
                 ;;
         esac
